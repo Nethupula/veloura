@@ -58,3 +58,30 @@ function baseUrl($path = '')
 {
     return '/veloura/' . ltrim($path, '/');
 }
+/**
+ * Get the total number of items in the customer's cart.
+ */
+function getCartItemCount()
+{
+    global $pdo;
+
+    if (!isCustomerLoggedIn()) {
+        return 0;
+    }
+
+    $userId = (int) $_SESSION['user_id'];
+
+    $stmt = $pdo->prepare("
+        SELECT COALESCE(SUM(ci.quantity), 0) AS item_count
+        FROM carts c
+        INNER JOIN cart_items ci
+            ON c.id = ci.cart_id
+        WHERE c.user_id = ?
+    ");
+
+    $stmt->execute([$userId]);
+
+    $result = $stmt->fetch();
+
+    return (int) ($result['item_count'] ?? 0);
+}

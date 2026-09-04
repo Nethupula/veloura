@@ -2,261 +2,348 @@
 
 require_once '../includes/bootstrap.php';
 
-require_once '../includes/header.php';
+if (!isCustomerLoggedIn()) {
+    redirect(baseUrl('customer/login.php'));
+}
 
-
-/*
-|--------------------------------------------------------------------------
-| Login Check
-|--------------------------------------------------------------------------
-*/
-
-if (!isCustomerLoggedIn()):
-
-?>
-
-<section class="empty-cart-section">
-
-    <div class="empty-cart">
-
-        <i class="fa-solid fa-bag-shopping"></i>
-
-        <h1>Your Cart</h1>
-
-        <p>
-            Please sign in to view your shopping cart.
-        </p>
-
-        <a
-            href="<?= e(baseUrl('customer/login.php')) ?>"
-            class="cart-action-btn"
-        >
-            Sign In
-        </a>
-
-    </div>
-
-</section>
-
-<?php
-
-    exit;
-
-endif;
-
+$userId = (int) $_SESSION['user_id'];
 
 /*
 |--------------------------------------------------------------------------
-| Get Cart
+| Get customer's cart
 |--------------------------------------------------------------------------
 */
 
-$cartQuery = $pdo->prepare("
+$stmt = $pdo->prepare("
     SELECT id
     FROM carts
     WHERE user_id = ?
     LIMIT 1
 ");
 
-$cartQuery->execute([
-    $_SESSION['user_id']
-]);
+$stmt->execute([$userId]);
 
-$cart = $cartQuery->fetch();
+$cart = $stmt->fetch();
 
 $cartItems = [];
-
+$subtotal = 0;
 
 if ($cart) {
 
-    $itemsQuery = $pdo->prepare("
+    $cartId = (int) $cart['id'];
+
+    /*
+    |--------------------------------------------------------------------------
+    | Get cart items
+    |--------------------------------------------------------------------------
+    */
+
+    $stmt = $pdo->prepare("
         SELECT
-            ci.id,
+            ci.id AS cart_item_id,
+            ci.product_id,
+            ci.variant_id,
             ci.quantity,
 
-            p.id AS product_id,
             p.name,
             p.slug,
             p.price,
             p.discount_price,
+            p.stock_quantity AS product_stock,
 
-            pv.id AS variant_id,
             pv.variant_name,
+            pv.sku AS variant_sku,
             pv.price AS variant_price,
+            pv.stock_quantity AS variant_stock,
 
-            (
-                SELECT pi.image_path
-                FROM product_images pi
-                WHERE pi.product_id = p.id
-                ORDER BY
-                    pi.is_primary DESC,
-                    pi.sort_order ASC,
-                    pi.id ASC
-                LIMIT 1
-            ) AS image_path
+            pi.image_path
 
         FROM cart_items ci
 
         INNER JOIN products p
-            ON p.id = ci.product_id
+            ON ci.product_id = p.id
 
         LEFT JOIN product_variants pv
-            ON pv.id = ci.variant_id
+            ON ci.variant_id = pv.id
+
+        LEFT JOIN product_images pi
+            ON pi.product_id = p.id
+            AND pi.is_primary = 1
 
         WHERE ci.cart_id = ?
 
         ORDER BY ci.created_at DESC
     ");
 
-    $itemsQuery->execute([
-        $cart['id']
-    ]);
+    $stmt->execute([$cartId]);
 
-    $cartItems = $itemsQuery->fetchAll();
+    $cartItems = $stmt->fetchAll();
+
+    /*
+    |--------------------------------------------------------------------------
+    | Calculate subtotal
+    |--------------------------------------------------------------------------
+    */
+
+    foreach ($cartItems as &$item) {
+
+        if ($item['variant_id'] && $item['variant_price'] !== null) {
+
+            $unitPrice = (float) $item['variant_price'];
+
+        } elseif ($item['discount_price'] !== null) {
+
+            $unitPrice = (float) $item['discount_price'];
+
+        } else {
+
+            $unitPrice = (float) $item['price'];
+        }
+
+        /*
+        | Available stock
+        */
+
+        if ($item['variant_id']) {
+            $availableStock = (int) $item['variant_stock'];
+        } else {
+            $availableStock = (int) $item['product_stock'];
+        }
+
+        $item['unit_price'] = $unitPrice;
+        $item['available_stock'] = $availableStock;
+        $item['item_total'] = $unitPrice * (int) $item['quantity'];
+
+        $subtotal += $item['item_total'];
+    }
+
+    unset($item);
 }
+
+require_once '../includes/header.php';
 
 ?>
 
-<!-- ========================================
-     CART
-======================================== -->
+<main class="cart-page">
 
-<section class="cart-section">
+    <section class="cart-header-section">
 
-    <div class="container">
+        <div class="container">
 
-        <div class="cart-heading">
+            <div class="cart-header-content">
 
-            <p class="section-eyebrow">
-                YOUR SELECTION
-            </p>
+                <span class="cart-eyebrow">
+                    Your Selection
+                </span>
 
-            <h1>Your Shopping Cart</h1>
-
-        </div>
-
-
-        <?php if (empty($cartItems)): ?>
-
-            <div class="empty-cart">
-
-                <i class="fa-solid fa-bag-shopping"></i>
-
-                <h2>Your cart is empty</h2>
+                <h1>
+                    Shopping Cart
+                </h1>
 
                 <p>
-                    Discover something beautiful from our collection.
+                    Review your selected pieces before completing your order.
                 </p>
-
-                <a
-                    href="<?= e(baseUrl('shop.php')) ?>"
-                    class="cart-action-btn"
-                >
-                    Continue Shopping
-                </a>
 
             </div>
 
+        </div>
 
-        <?php else: ?>
-
-
-            <div class="row g-5">
-
-                <!-- Cart Items -->
-
-                <div class="col-lg-8">
-
-                    <?php
-
-                    $cartSubtotal = 0;
-
-                    foreach ($cartItems as $item):
-
-                        $unitPrice = !empty($item['variant_price'])
-                            ? $item['variant_price']
-                            : (
-                                !empty($item['discount_price'])
-                                    ? $item['discount_price']
-                                    : $item['price']
-                            );
-
-                        $itemSubtotal =
-                            $unitPrice * $item['quantity'];
-
-                        $cartSubtotal += $itemSubtotal;
-
-                        $itemImage = !empty($item['image_path'])
-                            ? baseUrl(
-                                'assets/images/' .
-                                $item['image_path']
-                            )
-                            : baseUrl(
-                                'assets/images/product-placeholder.jpg'
-                            );
-
-                    ?>
-
-                        <div class="cart-item">
-
-                            <div class="cart-item-image">
-
-                                <img
-                                    src="<?= e($itemImage) ?>"
-                                    alt="<?= e($item['name']) ?>"
-                                >
-
-                            </div>
+    </section>
 
 
-                            <div class="cart-item-details">
+    <section class="cart-content-section">
 
-                                <p class="cart-item-category">
-                                    Jewelry
-                                </p>
+        <div class="container">
 
-                                <h3>
-                                    <?= e($item['name']) ?>
-                                </h3>
+            <?php if (empty($cartItems)): ?>
 
-                                <?php if (!empty($item['variant_name'])): ?>
+                <!-- Empty Cart -->
 
-                                    <p>
-                                        <?= e($item['variant_name']) ?>
-                                    </p>
+                <div class="empty-cart">
 
-                                <?php endif; ?>
+                    <div class="empty-cart-icon">
+                        <i class="fa-solid fa-bag-shopping"></i>
+                    </div>
 
-                                <p class="cart-item-price">
-                                    <?= formatPrice($unitPrice) ?>
-                                </p>
+                    <h2>
+                        Your cart is empty
+                    </h2>
 
-                                <p>
-                                    Quantity:
-                                    <?= (int) $item['quantity'] ?>
-                                </p>
+                    <p>
+                        Discover something beautiful and add it to your collection.
+                    </p>
 
-                            </div>
-
-
-                            <div class="cart-item-total">
-
-                                <?= formatPrice($itemSubtotal) ?>
-
-                            </div>
-
-                        </div>
-
-                    <?php endforeach; ?>
+                    <a
+                        href="<?= e(baseUrl('shop.php')) ?>"
+                        class="cart-shop-btn"
+                    >
+                        Continue Shopping
+                    </a>
 
                 </div>
 
+            <?php else: ?>
 
-                <!-- Summary -->
+                <div class="cart-layout">
 
-                <div class="col-lg-4">
+                    <!-- Cart Items -->
 
-                    <div class="cart-summary">
+                    <div class="cart-items-container">
+
+                        <?php foreach ($cartItems as $item): ?>
+
+                            <div class="cart-item">
+
+                                <!-- Product Image -->
+
+                                <div class="cart-item-image">
+
+                                    <?php if (!empty($item['image_path'])): ?>
+
+                                        <img
+                                            src="<?= e(baseUrl('assets/images/' . $item['image_path'])) ?>"
+                                            alt="<?= e($item['name']) ?>"
+                                        >
+
+                                    <?php else: ?>
+
+                                        <div class="cart-image-placeholder">
+                                            <i class="fa-regular fa-image"></i>
+                                        </div>
+
+                                    <?php endif; ?>
+
+                                </div>
+
+
+                                <!-- Product Details -->
+
+                                <div class="cart-item-details">
+
+                                    <div class="cart-item-info">
+
+                                        <span class="cart-item-category">
+                                            Jewelry
+                                        </span>
+
+                                        <h3>
+                                            <a href="<?= e(baseUrl('products/product-details.php?slug=' . $item['slug'])) ?>">
+                                                <?= e($item['name']) ?>
+                                            </a>
+                                        </h3>
+
+                                        <?php if (!empty($item['variant_name'])): ?>
+
+                                            <p class="cart-item-variant">
+                                                <?= e($item['variant_name']) ?>
+                                            </p>
+
+                                        <?php endif; ?>
+
+                                        <p class="cart-item-price">
+                                            <?= e(formatPrice($item['unit_price'])) ?>
+                                        </p>
+
+                                    </div>
+
+
+                                    <!-- Quantity + Remove -->
+
+                                    <div class="cart-item-actions">
+
+                                        <form
+                                            action="<?= e(baseUrl('cart/update-cart.php')) ?>"
+                                            method="POST"
+                                            class="cart-quantity-form"
+                                        >
+
+                                            <input
+                                                type="hidden"
+                                                name="cart_item_id"
+                                                value="<?= (int) $item['cart_item_id'] ?>"
+                                            >
+
+                                            <button
+                                                type="button"
+                                                class="quantity-btn quantity-minus"
+                                                data-target="quantity-<?= (int) $item['cart_item_id'] ?>"
+                                            >
+                                                −
+                                            </button>
+
+                                            <input
+                                                type="number"
+                                                id="quantity-<?= (int) $item['cart_item_id'] ?>"
+                                                name="quantity"
+                                                value="<?= (int) $item['quantity'] ?>"
+                                                min="1"
+                                                max="<?= (int) $item['available_stock'] ?>"
+                                                class="quantity-input"
+                                            >
+
+                                            <button
+                                                type="button"
+                                                class="quantity-btn quantity-plus"
+                                                data-target="quantity-<?= (int) $item['cart_item_id'] ?>"
+                                            >
+                                                +
+                                            </button>
+
+                                            <button
+                                                type="submit"
+                                                class="update-cart-btn"
+                                            >
+                                                Update
+                                            </button>
+
+                                        </form>
+
+
+                                        <form
+                                            action="<?= e(baseUrl('cart/remove-from-cart.php')) ?>"
+                                            method="POST"
+                                            class="remove-cart-form"
+                                        >
+
+                                            <input
+                                                type="hidden"
+                                                name="cart_item_id"
+                                                value="<?= (int) $item['cart_item_id'] ?>"
+                                            >
+
+                                            <button
+                                                type="submit"
+                                                class="remove-cart-btn"
+                                            >
+                                                <i class="fa-regular fa-trash-can"></i>
+                                                Remove
+                                            </button>
+
+                                        </form>
+
+                                    </div>
+
+                                </div>
+
+
+                                <!-- Item Total -->
+
+                                <div class="cart-item-total">
+
+                                    <?= e(formatPrice($item['item_total'])) ?>
+
+                                </div>
+
+                            </div>
+
+                        <?php endforeach; ?>
+
+                    </div>
+
+
+                    <!-- Cart Summary -->
+
+                    <aside class="cart-summary">
 
                         <h2>
                             Order Summary
@@ -269,7 +356,7 @@ if ($cart) {
                             </span>
 
                             <strong>
-                                <?= formatPrice($cartSubtotal) ?>
+                                <?= e(formatPrice($subtotal)) ?>
                             </strong>
 
                         </div>
@@ -280,11 +367,13 @@ if ($cart) {
                                 Shipping
                             </span>
 
-                            <span>
+                            <span class="shipping-note">
                                 Calculated at checkout
                             </span>
 
                         </div>
+
+                        <div class="summary-divider"></div>
 
                         <div class="summary-total">
 
@@ -293,7 +382,7 @@ if ($cart) {
                             </span>
 
                             <strong>
-                                <?= formatPrice($cartSubtotal) ?>
+                                <?= e(formatPrice($subtotal)) ?>
                             </strong>
 
                         </div>
@@ -303,21 +392,88 @@ if ($cart) {
                             class="checkout-btn"
                         >
                             Proceed to Checkout
+                            <i class="fa-solid fa-arrow-right"></i>
                         </a>
 
-                    </div>
+                        <a
+                            href="<?= e(baseUrl('shop.php')) ?>"
+                            class="continue-shopping-btn"
+                        >
+                            Continue Shopping
+                        </a>
+
+                    </aside>
 
                 </div>
 
-            </div>
+            <?php endif; ?>
+
+        </div>
+
+    </section>
+
+</main>
 
 
-        <?php endif; ?>
+<script>
 
-    </div>
+document.addEventListener('DOMContentLoaded', function () {
 
-</section>
+    /*
+    |--------------------------------------------------------------------------
+    | Quantity Buttons
+    |--------------------------------------------------------------------------
+    */
 
+    document.querySelectorAll('.quantity-minus').forEach(function (button) {
+
+        button.addEventListener('click', function () {
+
+            const input = document.getElementById(
+                this.dataset.target
+            );
+
+            if (!input) {
+                return;
+            }
+
+            let value = parseInt(input.value) || 1;
+
+            if (value > 1) {
+                input.value = value - 1;
+            }
+
+        });
+
+    });
+
+
+    document.querySelectorAll('.quantity-plus').forEach(function (button) {
+
+        button.addEventListener('click', function () {
+
+            const input = document.getElementById(
+                this.dataset.target
+            );
+
+            if (!input) {
+                return;
+            }
+
+            let value = parseInt(input.value) || 1;
+            let max = parseInt(input.max);
+
+            if (!max || value < max) {
+                input.value = value + 1;
+            }
+
+        });
+
+    });
+
+});
+
+</script>
 
 </body>
 </html>

@@ -65,7 +65,7 @@
                 >
                     <i class="fa-solid fa-bag-shopping"></i>
 
-                    <span class="cart-count">0</span>
+                    <span class="cart-count"><?= e(getCartItemCount()) ?></span>
                 </a>
 
             </div>
