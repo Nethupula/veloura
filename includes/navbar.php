@@ -44,6 +44,7 @@
 
             <div class="veloura-nav-icons">
 
+                <!-- Search -->
                 <a
                     href="<?= e(baseUrl('shop.php')) ?>"
                     aria-label="Search"
@@ -51,13 +52,107 @@
                     <i class="fa-solid fa-magnifying-glass"></i>
                 </a>
 
-                <a
-                    href="<?= e(baseUrl('customer/login.php')) ?>"
-                    aria-label="Account"
-                >
-                    <i class="fa-regular fa-user"></i>
-                </a>
 
+                <!-- Account -->
+                <div class="veloura-account">
+
+                    <button
+                        type="button"
+                        class="veloura-account-toggle"
+                        aria-label="Account"
+                        aria-expanded="false"
+                        id="velouraAccountToggle"
+                    >
+                        <i class="fa-regular fa-user"></i>
+                    </button>
+
+
+                    <div
+                        class="veloura-account-menu"
+                        id="velouraAccountMenu"
+                    >
+
+                        <?php if (isCustomerLoggedIn()): ?>
+
+                            <div class="account-menu-header">
+
+                                <span>
+                                    Signed in as
+                                </span>
+
+                                <strong>
+                                    <?= e(
+                                        $_SESSION['user_name']
+                                        ?? 'Customer'
+                                    ) ?>
+                                </strong>
+
+                            </div>
+
+
+                            <a
+                                href="<?= e(
+                                    baseUrl('customer/orders.php')
+                                ) ?>"
+                            >
+                                <i class="fa-solid fa-box"></i>
+                                My Orders
+                            </a>
+
+
+                            <a
+                                href="<?= e(
+                                    baseUrl('customer/logout.php')
+                                ) ?>"
+                            >
+                                <i class="fa-solid fa-right-from-bracket"></i>
+                                Logout
+                            </a>
+
+
+                        <?php else: ?>
+
+                            <div class="account-menu-header">
+
+                                <span>
+                                    Welcome to
+                                </span>
+
+                                <strong>
+                                    Veloura
+                                </strong>
+
+                            </div>
+
+
+                            <a
+                                href="<?= e(
+                                    baseUrl('customer/login.php')
+                                ) ?>"
+                            >
+                                <i class="fa-solid fa-right-to-bracket"></i>
+                                Login
+                            </a>
+
+
+                            <a
+                                href="<?= e(
+                                    baseUrl('customer/register.php')
+                                ) ?>"
+                            >
+                                <i class="fa-solid fa-user-plus"></i>
+                                Create Account
+                            </a>
+
+                        <?php endif; ?>
+
+                    </div>
+
+                </div>
+                <!-- END Account -->
+
+
+                <!-- Shopping Cart -->
                 <a
                     href="<?= e(baseUrl('cart/cart.php')) ?>"
                     class="cart-icon"
@@ -65,10 +160,13 @@
                 >
                     <i class="fa-solid fa-bag-shopping"></i>
 
-                    <span class="cart-count"><?= e(getCartItemCount()) ?></span>
+                    <span class="cart-count">
+                        <?= e(getCartItemCount()) ?>
+                    </span>
                 </a>
 
             </div>
+            <!-- END nav-icons -->
 
 
             <!-- Mobile Menu Button -->
@@ -83,8 +181,10 @@
             </button>
 
         </div>
+        <!-- END nav-right -->
 
     </div>
+    <!-- END navbar-container -->
 
 </nav>
 
@@ -92,6 +192,12 @@
 <script>
 
 document.addEventListener('DOMContentLoaded', function () {
+
+    /*
+    |--------------------------------------------------------------------------
+    | Mobile Navigation
+    |--------------------------------------------------------------------------
+    */
 
     const menuToggle =
         document.getElementById('velouraMenuToggle');
@@ -121,7 +227,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
 
-        // Close menu after selecting a link
         navMenu.querySelectorAll('a').forEach(function (link) {
 
             link.addEventListener('click', function () {
@@ -139,6 +244,68 @@ document.addEventListener('DOMContentLoaded', function () {
             });
 
         });
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Account Dropdown
+    |--------------------------------------------------------------------------
+    */
+
+    const accountToggle =
+        document.getElementById('velouraAccountToggle');
+
+    const accountMenu =
+        document.getElementById('velouraAccountMenu');
+
+
+    if (accountToggle && accountMenu) {
+
+        accountToggle.addEventListener(
+            'click',
+            function (event) {
+
+                event.stopPropagation();
+
+                accountMenu.classList.toggle('active');
+
+                const isOpen =
+                    accountMenu.classList.contains('active');
+
+                accountToggle.setAttribute(
+                    'aria-expanded',
+                    isOpen
+                );
+
+            }
+        );
+
+
+        document.addEventListener(
+            'click',
+            function () {
+
+                accountMenu.classList.remove('active');
+
+                accountToggle.setAttribute(
+                    'aria-expanded',
+                    'false'
+                );
+
+            }
+        );
+
+
+        accountMenu.addEventListener(
+            'click',
+            function (event) {
+
+                event.stopPropagation();
+
+            }
+        );
 
     }
 
