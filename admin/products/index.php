@@ -36,8 +36,39 @@ $stmt = $pdo->query("
 ");
 
 $products = $stmt->fetchAll();
+$successMessage =
+    $_SESSION['admin_product_success'] ?? '';
 
+$errorMessage =
+    $_SESSION['admin_product_error'] ?? '';
+
+unset($_SESSION['admin_product_success']);
+unset($_SESSION['admin_product_error']);
 ?>
+<?php if ($successMessage !== ''): ?>
+
+    <div class="admin-product-success">
+
+        <i class="fa-solid fa-circle-check"></i>
+
+        <?= e($successMessage) ?>
+
+    </div>
+
+<?php endif; ?>
+
+
+<?php if ($errorMessage !== ''): ?>
+
+    <div class="admin-product-error">
+
+        <i class="fa-solid fa-circle-exclamation"></i>
+
+        <?= e($errorMessage) ?>
+
+    </div>
+
+<?php endif; ?>
 
 <div class="admin-page-header">
 
@@ -324,24 +355,86 @@ $products = $stmt->fetchAll();
                         <!-- Actions -->
 
                         <td>
-
                             <div class="product-actions">
 
-                                <a
-                                    href="#"
-                                    title="Edit Product"
-                                >
-                                    <i class="fa-solid fa-pen"></i>
-                                </a>
+    <!-- Edit -->
 
-                                <a
-                                    href="#"
-                                    title="Delete Product"
-                                >
-                                    <i class="fa-solid fa-trash"></i>
-                                </a>
+    <a
+        href="<?= e(
+            baseUrl(
+                'admin/products/edit.php?id=' .
+                $product['id']
+            )
+        ) ?>"
+        title="Edit Product"
+    >
+        <i class="fa-solid fa-pen"></i>
+    </a>
 
-                            </div>
+
+    <!-- Activate / Deactivate -->
+
+    <form
+        method="POST"
+        action="<?= e(
+            baseUrl(
+                'admin/products/toggle-status.php'
+            )
+        ) ?>"
+        onsubmit="return confirm('Are you sure you want to change this product status?');"
+    >
+
+        <input
+            type="hidden"
+            name="id"
+            value="<?= e($product['id']) ?>"
+        >
+
+        <button
+            type="submit"
+            title="<?= $product['status'] === 'active'
+                ? 'Deactivate Product'
+                : 'Activate Product' ?>"
+        >
+
+            <i class="fa-solid fa-power-off"></i>
+
+        </button>
+
+    </form>
+
+
+    <!-- Delete -->
+
+    <form
+        method="POST"
+        action="<?= e(
+            baseUrl(
+                'admin/products/delete.php'
+            )
+        ) ?>"
+        onsubmit="return confirm('Are you sure you want to permanently delete this product? This action cannot be undone.');"
+    >
+
+        <input
+            type="hidden"
+            name="id"
+            value="<?= e($product['id']) ?>"
+        >
+
+        <button
+            type="submit"
+            title="Delete Product"
+        >
+
+            <i class="fa-solid fa-trash"></i>
+
+        </button>
+
+    </form>
+
+</div>
+
 
                         </td>
 
