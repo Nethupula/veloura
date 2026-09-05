@@ -851,3 +851,341 @@ body {
     }
 
 }
+/* =========================================================
+   ADD / EDIT PRODUCT FORM
+   ========================================================= */
+
+.admin-secondary-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 17px;
+    background: #FFFFFF;
+    color: #171717;
+    border: 1px solid #D9D0C4;
+    text-decoration: none;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.admin-secondary-button:hover {
+    border-color: #C9A96E;
+    color: #8A6A32;
+}
+
+.admin-form-errors {
+    margin-bottom: 22px;
+}
+
+.admin-form-error {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 7px;
+    padding: 12px 15px;
+    background: #FFF5F5;
+    border: 1px solid #E3B8B8;
+    color: #8A3F3F;
+    font-size: 12px;
+}
+
+.admin-product-form {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.admin-form-card {
+    background: #FFFFFF;
+    border: 1px solid #E8DED0;
+}
+
+.admin-form-card-header {
+    padding: 20px 23px;
+    border-bottom: 1px solid #E8DED0;
+}
+
+.admin-form-card-header h3 {
+    margin: 0 0 5px;
+    font-family: 'Playfair Display', serif;
+    font-size: 19px;
+    font-weight: 600;
+}
+
+.admin-form-card-header p {
+    margin: 0;
+    color: #77716A;
+    font-size: 11px;
+}
+
+.admin-form-card-body {
+    padding: 23px;
+}
+
+.admin-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.admin-form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-form-group.full {
+    grid-column: 1 / -1;
+}
+
+.admin-form-group label {
+    margin-bottom: 7px;
+    color: #4B4844;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.admin-form-group input,
+.admin-form-group select,
+.admin-form-group textarea {
+    width: 100%;
+    padding: 11px 12px;
+    border: 1px solid #DDD5CA;
+    background: #FFFFFF;
+    color: #242424;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.admin-form-group input,
+.admin-form-group select {
+    height: 44px;
+}
+
+.admin-form-group textarea {
+    resize: vertical;
+    line-height: 1.6;
+}
+
+.admin-form-group input:focus,
+.admin-form-group select:focus,
+.admin-form-group textarea:focus {
+    border-color: #C9A96E;
+}
+
+.admin-form-help {
+    margin-top: 6px;
+    color: #99938B;
+    font-size: 9px;
+}
+
+
+/* =========================================================
+   CHECKBOX
+   ========================================================= */
+
+.admin-checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    color: #4B4844;
+    font-size: 12px;
+}
+
+.admin-checkbox-row input {
+    width: 16px;
+    height: 16px;
+    accent-color: #C9A96E;
+}
+
+
+/* =========================================================
+   VARIANTS
+   ========================================================= */
+
+.simple-stock-section {
+    margin-top: 22px;
+    max-width: 350px;
+}
+
+.variants-section {
+    margin-top: 22px;
+}
+
+.variants-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 18px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #E8DED0;
+}
+
+.variants-header h4 {
+    margin: 0 0 4px;
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+}
+
+.variants-header p {
+    margin: 0;
+    color: #77716A;
+    font-size: 10px;
+}
+
+.admin-small-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 13px;
+    border: 1px solid #C9A96E;
+    background: #FFFFFF;
+    color: #8A6A32;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.admin-small-button:hover {
+    background: #C9A96E;
+    color: #171717;
+}
+
+.variant-row {
+    display: grid;
+    grid-template-columns: 1.2fr 1.2fr 1fr 0.8fr 0.9fr 35px;
+    gap: 10px;
+    align-items: end;
+    padding: 15px;
+    margin-bottom: 10px;
+    background: #F8F5EF;
+    border: 1px solid #E8DED0;
+}
+
+.variant-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.variant-field label {
+    margin-bottom: 6px;
+    color: #77716A;
+    font-size: 9px;
+    font-weight: 600;
+}
+
+.variant-field input {
+    width: 100%;
+    height: 38px;
+    padding: 0 9px;
+    border: 1px solid #D9D0C4;
+    background: #FFFFFF;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    outline: none;
+}
+
+.variant-field input:focus {
+    border-color: #C9A96E;
+}
+
+.remove-variant {
+    width: 35px;
+    height: 38px;
+    border: 1px solid #E3B8B8;
+    background: #FFF5F5;
+    color: #8A4A4A;
+    cursor: pointer;
+}
+
+.remove-variant:hover {
+    background: #E3B8B8;
+    color: #FFFFFF;
+}
+
+
+/* =========================================================
+   FORM ACTIONS
+   ========================================================= */
+
+.admin-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+}
+
+.admin-cancel-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 18px;
+    background: #FFFFFF;
+    border: 1px solid #D9D0C4;
+    color: #77716A;
+    text-decoration: none;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.admin-cancel-button:hover {
+    color: #171717;
+    border-color: #171717;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+    .admin-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-form-group.full {
+        grid-column: auto;
+    }
+
+    .variant-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .remove-variant {
+        width: 100%;
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    .admin-form-card-header,
+    .admin-form-card-body {
+        padding: 18px;
+    }
+
+    .admin-form-actions {
+        flex-direction: column-reverse;
+    }
+
+    .admin-form-actions a,
+    .admin-form-actions button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .variants-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .variant-row {
+        grid-template-columns: 1fr;
+    }
+
+}

@@ -52,9 +52,9 @@ $products = $stmt->fetchAll();
     </div>
 
     <a
-        href="#"
-        class="admin-primary-button"
-    >
+    href="<?= e(baseUrl('admin/products/add.php')) ?>"
+    class="admin-primary-button"
+>
         <i class="fa-solid fa-plus"></i>
         Add Product
     </a>
@@ -369,9 +369,9 @@ $products = $stmt->fetchAll();
             </p>
 
             <a
-                href="#"
-                class="admin-primary-button"
-            >
+    href="<?= e(baseUrl('admin/products/add.php')) ?>"
+    class="admin-primary-button"
+>
                 <i class="fa-solid fa-plus"></i>
                 Add Your First Product
             </a>
