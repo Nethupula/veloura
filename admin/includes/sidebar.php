@@ -42,10 +42,13 @@ $currentPage = basename($_SERVER['PHP_SELF']);
             STORE
         </div>
 
-        <a href="#">
-            <i class="fa-solid fa-gem"></i>
-            <span>Products</span>
-        </a>
+        <a
+    href="<?= e(baseUrl('admin/products/index.php')) ?>"
+    class="<?= strpos($_SERVER['PHP_SELF'], '/products/') !== false ? 'active' : '' ?>"
+>
+    <i class="fa-solid fa-gem"></i>
+    <span>Products</span>
+</a>
 
         <a href="#">
             <i class="fa-solid fa-layer-group"></i>
