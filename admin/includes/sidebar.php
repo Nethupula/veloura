@@ -50,10 +50,18 @@ $currentPage = basename($_SERVER['PHP_SELF']);
     <span>Products</span>
 </a>
 
-        <a href="#">
-            <i class="fa-solid fa-layer-group"></i>
-            <span>Categories</span>
-        </a>
+        <a
+    href="<?= e(
+        baseUrl('admin/categories/index.php')
+    ) ?>"
+    class="<?= strpos(
+        $_SERVER['PHP_SELF'],
+        '/categories/'
+    ) !== false ? 'active' : '' ?>"
+>
+    <i class="fa-solid fa-layer-group"></i>
+    <span>Categories</span>
+</a>
 
         <a href="#">
             <i class="fa-solid fa-box"></i>
